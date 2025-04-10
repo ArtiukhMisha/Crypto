@@ -42,6 +42,16 @@ class NaklonkiSerializer(serializers.ModelSerializer):
 
     results = ResultSerializer(source="*", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
+    deal_potential = serializers.ChoiceField(
+        choices=[
+            ("33", "33%"),
+            ("50", "50%"),
+            ("100", "100%"),
+            ("STOP", "STOP"),
+            ("MORE", "Больше"),
+        ],
+        write_only=True,
+    )
 
     class Meta:
         model = Naklonki
@@ -50,6 +60,7 @@ class NaklonkiSerializer(serializers.ModelSerializer):
             "date",
             "token_name",
             "is_long",
+            "deal_potential",
             "form",
             "comment",
             "img_url",

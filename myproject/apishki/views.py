@@ -88,11 +88,6 @@ class NaklonkiListView(generics.ListAPIView):
         return Response(response_data)
 
 
-class NaklonkiDetailView(generics.RetrieveUpdateDestroyAPIView):
+class NaklonkiRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
-
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)  # Return the serialized data of the instance
