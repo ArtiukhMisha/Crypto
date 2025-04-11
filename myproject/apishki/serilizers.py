@@ -52,6 +52,10 @@ class NaklonkiSerializer(serializers.ModelSerializer):
         ],
         write_only=True,
     )
+    profit_if_full = serializers.DecimalField(
+        max_digits=10, decimal_places=2, write_only=True
+    )
+    details_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Naklonki
@@ -61,9 +65,15 @@ class NaklonkiSerializer(serializers.ModelSerializer):
             "token_name",
             "is_long",
             "deal_potential",
+            "profit_if_full",
             "form",
             "comment",
             "img_url",
             "username",
             "results",
+            "details_url",
         ]
+
+    def get_details_url(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(f"/api/detail/{obj.pk}/")

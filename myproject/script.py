@@ -12,5 +12,5 @@ from apishki.models import Naklonki
 from django.db import connection
 
 for naklonki in Naklonki.objects.all():
-    naklonki.deal_potential = random.choice(["STOP", "33", "50", "100", "MORE"])
+    naklonki.profit_if_full = random.uniform(0, 1000)
     naklonki.save()

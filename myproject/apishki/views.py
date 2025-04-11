@@ -12,8 +12,22 @@ class NaklonkiListView(generics.ListAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
 
+    def get_queryset(self):
+        if "my_deals" in self.request.path:
+            user = self.request.user
+            queryset = Naklonki.objects.filter(user=user)
+            if not queryset.exists():
+                return Naklonki.objects.none()
+            return queryset
+        return Naklonki.objects.all()
+
     def get(self, request, *args, **kwargs):
+
         data = self.get_serializer(self.get_queryset(), many=True).data
+        if not data:
+            return Response(
+                {"create": self.request.build_absolute_uri("/api/create/")}, status=200
+            )
         total = 0
         is_long = 0
         profit_if_1 = {
@@ -66,10 +80,20 @@ class NaklonkiListView(generics.ListAPIView):
             profit_if_50["profit"] += i["results"]["profit_if_50"]
             profit_if_full["profit"] += i["results"]["profit_if_full"]
 
-            profit_if_1[i["form"]] += 1
-            profit_if_33[i["form"]] += 1
-            profit_if_50[i["form"]] += 1
-            profit_if_full[i["form"]] += 1
+            if i["results"]["profit_if_full"] > 1:
+                profit_if_1[i["form"]] += 1
+                profit_if_33[i["form"]] += 1
+                profit_if_50[i["form"]] += 1
+                profit_if_full[i["form"]] += 1
+            elif i["results"]["profit_if_50"] > 1:
+                profit_if_1[i["form"]] += 1
+                profit_if_33[i["form"]] += 1
+                profit_if_50[i["form"]] += 1
+            elif i["results"]["profit_if_30"] >= 1:
+                profit_if_1[i["form"]] += 1
+                profit_if_33[i["form"]] += 1
+            elif i["results"]["profit_if_30"] > 0:
+                profit_if_33[i["form"]] += 1
 
         summary = {
             "long": is_long,
@@ -91,3 +115,32 @@ class NaklonkiListView(generics.ListAPIView):
 class NaklonkiRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
+
+
+class MyDealsListView(viewsets.ModelViewSet):
+
+    queryset = Naklonki.objects.all()
+    serializer_class = NaklonkiSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Naklonki.objects.filter(user=user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            return Response(
+                {"create": self.request.build_absolute_uri("/api/create/")}, status=200
+            )
+
+        # Otherwise, return the serialized data
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class NaklonkiCreateView(generics.CreateAPIView):
+    queryset = Naklonki.objects.all()
+    serializer_class = NaklonkiSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
