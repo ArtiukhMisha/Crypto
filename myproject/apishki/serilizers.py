@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Naklonki
 from decimal import Decimal
+from rest_framework.reverse import reverse
 
 
 class ResultSerializer(serializers.Serializer):
@@ -41,7 +42,7 @@ class ResultSerializer(serializers.Serializer):
 class NaklonkiSerializer(serializers.ModelSerializer):
 
     results = ResultSerializer(source="*", read_only=True)
-    username = serializers.CharField(source="user.username", read_only=True)
+    username = serializers.ReadOnlyField(source="user.username")
     deal_potential = serializers.ChoiceField(
         choices=[
             ("33", "33%"),
@@ -74,6 +75,11 @@ class NaklonkiSerializer(serializers.ModelSerializer):
             "details_url",
         ]
 
-    def get_details_url(self, obj):
+    def get_details_url(self, obj, format=None):
         request = self.context.get("request")
-        return request.build_absolute_uri(f"/api/detail/{obj.pk}/")
+        return reverse(
+            "naklonki-crud",
+            args=[obj.pk],
+            request=request,
+            format=format,
+        )

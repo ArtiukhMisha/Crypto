@@ -6,6 +6,7 @@ from .views import (
     MyDealsListView,
     NaklonkiCreateView,
 )
+from rest_framework.authtoken import views
 
 
 urlpatterns = [
@@ -18,4 +19,5 @@ urlpatterns = [
     ),
     path("my_deals/", MyDealsListView.as_view({"get": "list"}), name="my-deals"),
     path("create/", NaklonkiCreateView.as_view(), name="naklonki-create"),
+    path("api-token-auth/", views.obtain_auth_token, name="api-token-auth"),
 ]

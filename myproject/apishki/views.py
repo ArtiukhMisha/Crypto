@@ -6,11 +6,16 @@ from rest_framework import generics
 
 from .models import Naklonki
 from .serilizers import NaklonkiSerializer
+from .permission import IsOwnerOrMentorOrReadOnly
 
 
 class NaklonkiListView(generics.ListAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
+    authentication_classes = (
+        rest_framework.authentication.SessionAuthentication,
+        rest_framework.authentication.TokenAuthentication,
+    )
 
     def get_queryset(self):
         if "my_deals" in self.request.path:
@@ -115,12 +120,26 @@ class NaklonkiListView(generics.ListAPIView):
 class NaklonkiRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
+    authentication_classes = (
+        rest_framework.authentication.SessionAuthentication,
+        rest_framework.authentication.TokenAuthentication,
+    )
+    permission_classes = [IsOwnerOrMentorOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class MyDealsListView(viewsets.ModelViewSet):
 
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
+
+    authentication_classes = (
+        rest_framework.authentication.SessionAuthentication,
+        rest_framework.authentication.TokenAuthentication,
+    )
+    permission_classes = [IsOwnerOrMentorOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
