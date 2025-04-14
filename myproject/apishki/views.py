@@ -156,10 +156,18 @@ class MyDealsListView(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
 
 class NaklonkiCreateView(generics.CreateAPIView):
     queryset = Naklonki.objects.all()
     serializer_class = NaklonkiSerializer
+    authentication_classes = (
+        rest_framework.authentication.SessionAuthentication,
+        rest_framework.authentication.TokenAuthentication,
+    )
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
