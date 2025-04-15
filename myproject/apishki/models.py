@@ -16,7 +16,7 @@ class Naklonki(models.Model):
     MOVEMENT_TYPE_CHOICES = [
         (DUGA, "Дуга"),
         (FLAT, "Плоская"),
-        (VOL, "Высокая волатильность"),
+        (VOL, "Волатильность"),
         (OTHER, "Неопределенная"),
     ]
     THIRTY = "33"

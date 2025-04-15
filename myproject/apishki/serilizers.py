@@ -11,8 +11,8 @@ class ResultSerializer(serializers.Serializer):
     profit_if_full = serializers.SerializerMethodField()
 
     def get_profit_if_30(self, obj):
-        if obj.deal_potential in ["33", "50", "100", "MORE"]:
-            return obj.profit_if_full * Decimal(0.33)
+        if obj.deal_potential in ["30", "50", "100", "MORE"]:
+            return obj.profit_if_full * Decimal(0.30)
         return -1
 
     def get_profit_if_50(self, obj):
@@ -27,7 +27,7 @@ class ResultSerializer(serializers.Serializer):
 
     def get_profit_if_1(self, obj):
         if (
-            obj.deal_potential in ["33", "50", "100", "MORE"]
+            obj.deal_potential in ["30", "50", "100", "MORE"]
             and self.get_profit_if_30(obj) > 1
         ):
             return 1
@@ -45,7 +45,7 @@ class NaklonkiSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="user.username")
     deal_potential = serializers.ChoiceField(
         choices=[
-            ("33", "33%"),
+            ("30", "30%"),
             ("50", "50%"),
             ("100", "100%"),
             ("STOP", "STOP"),
@@ -57,6 +57,7 @@ class NaklonkiSerializer(serializers.ModelSerializer):
         max_digits=10, decimal_places=2, write_only=True
     )
     details_url = serializers.SerializerMethodField()
+    form_display = serializers.CharField(source="get_form_display", read_only=True)
 
     class Meta:
         model = Naklonki
@@ -68,6 +69,7 @@ class NaklonkiSerializer(serializers.ModelSerializer):
             "deal_potential",
             "profit_if_full",
             "form",
+            "form_display",
             "comment",
             "img_url",
             "username",

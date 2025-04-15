@@ -1,0 +1,22 @@
+{% extends "front/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'inventory/css/style.css' %}">
+<script src="{% static 'inventory/JS/script.js' %}"></script>
+{% endblock head %}
+
+{% block content %}
+<div class="col-md-7 col-lg-8">
+    <h4 class="mb-3">New item in inventory</h4>
+    <form class="needs-validation" novalidate="" method="post" action="">
+      {% csrf_token %}
+      
+        {{ form.name }}<br>
+        {{ form.quantity }}<br>
+        {{ form.unit }}<br>
+        {{ form.unit_price }}<br>
+
+      <button class="w-100 btn btn-primary btn-lg" type="submit">Submit</button>
+    </form>
+  </div>
+{% endblock content %}

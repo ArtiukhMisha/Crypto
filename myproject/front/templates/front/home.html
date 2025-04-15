@@ -1,0 +1,31 @@
+{% extends "front/base.html" %}
+{%load static%}
+{% block head %}
+
+{% endblock head %}
+
+
+{% block content %}
+<div class="container">
+<div class=" row row-cols-1 row-cols-md-1 mb-1 text-center justify-content-between  ">
+    <div class="col">
+      <div class="card mb-4 rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">Orders</h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mt-3 mb-4">
+            <li>Enter in new recipes along with their recipe requirements, and how much that menu item cost</li>
+          </ul>
+
+          <a href="{% url 'create_purchase'%}"><button type="button" class="w-100 btn btn-lg btn-outline-primary">Make a purchase</button></a>
+        </div>
+      </div>
+      <a href="api/"><button type="button" class="w-100 btn btn-lg btn-outline-primary mb-3">API</button></a>
+      <a href="#"><button type="button" class="w-100 btn btn-lg btn-outline-primary">Crypto(to be updated)</button></a>
+
+    </div>
+   
+  </div>
+</div>
+{% endblock content %}

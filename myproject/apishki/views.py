@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import rest_framework
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -35,14 +35,21 @@ class NaklonkiListView(generics.ListAPIView):
             )
         total = 0
         is_long = 0
+        total_du = 0
+        total_fl = 0
+        total_vol = 0
+        total_ot = 0
+
         profit_if_1 = {
+            "name": "1%",
             "profit": 0,
             "DU": 0,
             "FL": 0,
             "VOL": 0,
             "OT": 0,
         }
-        profit_if_33 = {
+        profit_if_30 = {
+            "name": "30",
             "profit": 0,
             "DU": 0,
             "FL": 0,
@@ -50,6 +57,7 @@ class NaklonkiListView(generics.ListAPIView):
             "OT": 0,
         }
         profit_if_50 = {
+            "name": "50",
             "profit": 0,
             "DU": 0,
             "FL": 0,
@@ -57,6 +65,7 @@ class NaklonkiListView(generics.ListAPIView):
             "OT": 0,
         }
         profit_if_full = {
+            "name": "Full",
             "profit": 0,
             "DU": 0,
             "FL": 0,
@@ -81,32 +90,92 @@ class NaklonkiListView(generics.ListAPIView):
             if i["results"]["profit_if_1"] == -1 and i["results"]["profit_if_30"] == -1:
                 stops += 1
             profit_if_1["profit"] += i["results"]["profit_if_1"]
-            profit_if_33["profit"] += i["results"]["profit_if_30"]
+            profit_if_30["profit"] += i["results"]["profit_if_30"]
             profit_if_50["profit"] += i["results"]["profit_if_50"]
             profit_if_full["profit"] += i["results"]["profit_if_full"]
-
+            if i["form"] == "DU":
+                total_du += 1
+            elif i["form"] == "FL":
+                total_fl += 1
+            elif i["form"] == "VOL":
+                total_vol += 1
+            else:
+                total_ot += 1
             if i["results"]["profit_if_full"] > 1:
                 profit_if_1[i["form"]] += 1
-                profit_if_33[i["form"]] += 1
+                profit_if_30[i["form"]] += 1
                 profit_if_50[i["form"]] += 1
                 profit_if_full[i["form"]] += 1
             elif i["results"]["profit_if_50"] > 1:
                 profit_if_1[i["form"]] += 1
-                profit_if_33[i["form"]] += 1
+                profit_if_30[i["form"]] += 1
                 profit_if_50[i["form"]] += 1
             elif i["results"]["profit_if_30"] >= 1:
                 profit_if_1[i["form"]] += 1
-                profit_if_33[i["form"]] += 1
+                profit_if_30[i["form"]] += 1
             elif i["results"]["profit_if_30"] > 0:
-                profit_if_33[i["form"]] += 1
+                profit_if_30[i["form"]] += 1
 
+            wr_profit_loss = {
+                "profit_if_1": {"wins": 0, "losses": 0},
+                "profit_if_30": {"wins": 0, "losses": 0},
+                "profit_if_50": {"wins": 0, "losses": 0},
+                "profit_if_full": {"wins": 0, "losses": 0},
+            }
+
+            for i in data:
+                if i["results"]["profit_if_1"] > 0:
+                    wr_profit_loss["profit_if_1"]["wins"] += 1
+                else:
+                    wr_profit_loss["profit_if_1"]["losses"] += 1
+
+                if i["results"]["profit_if_30"] > 0:
+                    wr_profit_loss["profit_if_30"]["wins"] += 1
+                else:
+                    wr_profit_loss["profit_if_30"]["losses"] += 1
+
+                if i["results"]["profit_if_50"] > 0:
+                    wr_profit_loss["profit_if_50"]["wins"] += 1
+                else:
+                    wr_profit_loss["profit_if_50"]["losses"] += 1
+
+                if i["results"]["profit_if_full"] > 0:
+                    wr_profit_loss["profit_if_full"]["wins"] += 1
+                else:
+                    wr_profit_loss["profit_if_full"]["losses"] += 1
+        profit_if_1["winrate"] = round(
+            (wr_profit_loss["profit_if_1"]["wins"] / total * 100) if total > 0 else 0, 2
+        )
+        profit_if_30["winrate"] = round(
+            (wr_profit_loss["profit_if_30"]["wins"] / total * 100) if total > 0 else 0,
+            2,
+        )
+        profit_if_50["winrate"] = round(
+            (wr_profit_loss["profit_if_50"]["wins"] / total * 100) if total > 0 else 0,
+            2,
+        )
+        profit_if_full["winrate"] = round(
+            (
+                (wr_profit_loss["profit_if_full"]["wins"] / total * 100)
+                if total > 0
+                else 0
+            ),
+            2,
+        )
         summary = {
+            "total": total,
             "long": is_long,
             "short": total - is_long,
-            "profit_if_1": profit_if_1,
-            "profit_if_33": profit_if_33,
-            "profit_if_50": profit_if_50,
-            "profit_if_full": profit_if_full,
+            "total_du": total_du,
+            "total_fl": total_fl,
+            "total_vol": total_vol,
+            "total_ot": total_ot,
+            "profits": {
+                "profit_if_1": profit_if_1,
+                "profit_if_30": profit_if_30,
+                "profit_if_50": profit_if_50,
+                "profit_if_full": profit_if_full,
+            },
             "form_count": form_count,
         }
         response_data = {
@@ -128,36 +197,6 @@ class NaklonkiRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-
-class MyDealsListView(viewsets.ModelViewSet):
-
-    queryset = Naklonki.objects.all()
-    serializer_class = NaklonkiSerializer
-
-    authentication_classes = (
-        rest_framework.authentication.SessionAuthentication,
-        rest_framework.authentication.TokenAuthentication,
-    )
-    permission_classes = [IsOwnerOrMentorOrReadOnly]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Naklonki.objects.filter(user=user)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset.exists():
-            return Response(
-                {"create": self.request.build_absolute_uri("/api/create/")}, status=200
-            )
-
-        # Otherwise, return the serialized data
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
 
 
 class NaklonkiCreateView(generics.CreateAPIView):

@@ -80,7 +80,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "myproject.wsgi.application"
 
-
+API_BASE_URL = "http://localhost:8000/api"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASE_URL = "postgresql://neondb_owner:npg_K4wd5AOutNWI@ep-wandering-band-a2uq99jf-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
